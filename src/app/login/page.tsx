@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -19,27 +21,11 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(data.user))
-        localStorage.setItem('token', data.token)
-        
-        // Redirect to home
-        router.push('/')
-        router.refresh()
-      } else {
-        setError(data.error || 'Login failed')
-      }
+      await login(formData.email, formData.password)
+      // Redirect to home after successful login
+      router.push('/')
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -107,8 +93,11 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
-          <div className="text-center">
-            <Link href="/" className="text-sm text-gray-600 hover:text-gray-500">
+          <div className="flex justify-between text-sm">
+            <Link href="/forgot-password" className="text-blue-600 hover:text-blue-500">
+              Forgot password?
+            </Link>
+            <Link href="/" className="text-gray-600 hover:text-gray-500">
               Continue without signing in
             </Link>
           </div>

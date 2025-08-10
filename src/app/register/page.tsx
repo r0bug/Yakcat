@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,24 +48,11 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (response.ok) {
-        // Auto-login after registration
-        const loginResponse = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password
-          })
-        })
-
-        const loginData = await loginResponse.json()
-
-        if (loginResponse.ok) {
-          localStorage.setItem('user', JSON.stringify(loginData.user))
-          localStorage.setItem('token', loginData.token)
+        // Auto-login after registration using AuthContext
+        try {
+          await login(formData.email, formData.password)
           router.push('/')
-          router.refresh()
-        } else {
+        } catch (loginErr) {
           // Registration successful but login failed
           router.push('/login')
         }

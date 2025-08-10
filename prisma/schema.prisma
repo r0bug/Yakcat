@@ -11,13 +11,22 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  password      String
-  role          UserRole  @default(VENDOR)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  name                 String?
+  password             String
+  role                 UserRole  @default(VENDOR)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Profile fields
+  defaultPhone         String?
+  defaultLocation      String?
+  defaultContactMethod String?   @default("email")
+  
+  // Password reset fields
+  resetToken           String?   @unique
+  resetTokenExpiry     DateTime?
   
   items         Item[]
   messages      Message[] @relation("UserMessages")
