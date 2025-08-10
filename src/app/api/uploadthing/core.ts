@@ -1,10 +1,9 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '@/lib/jwt-config';
 
 const f = createUploadthing();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {

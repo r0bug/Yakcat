@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/db'
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key'
+import { JWT_SECRET } from '@/lib/jwt-config'
 
 export interface JWTPayload {
   userId: string
