@@ -73,7 +73,7 @@ Always use environment variables for:
 Example:
 ```javascript
 // ❌ WRONG
-const password = "6809Timer";
+const password = "myStupidPassw0rd";
 
 // ✅ CORRECT  
 const password = process.env.ADMIN_PASSWORD;
