@@ -1,50 +1,99 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getAuthUser } from '@/lib/auth'
 
-export async function POST(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { recipientId, subject, body: messageBody } = body
+    const user = await getAuthUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    if (!recipientId || !subject || !messageBody) {
+    const messages = await prisma.message.findMany({
+      where: {
+        recipientId: user.id
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        recipient: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    return NextResponse.json(messages)
+  } catch (error) {
+    console.error('Error fetching messages:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch messages' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getAuthUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { recipientEmail, subject, body: messageBody } = body
+
+    if (!recipientEmail || !subject || !messageBody) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'All fields are required' },
         { status: 400 }
       )
     }
 
-    // Return mock success if no database
-    if (!prisma) {
-      return NextResponse.json({
-        id: Date.now().toString(),
-        subject,
-        body: messageBody,
-        recipientId,
-        senderId: 'temp-user',
-        createdAt: new Date().toISOString()
-      })
-    }
+    // Find recipient by email
+    const recipient = await prisma.user.findUnique({
+      where: { email: recipientEmail }
+    })
 
-    // For now, use a temp sender ID since we don't have auth
-    const senderId = 'temp-sender-id'
+    if (!recipient) {
+      return NextResponse.json(
+        { error: 'Recipient not found' },
+        { status: 404 }
+      )
+    }
 
     const message = await prisma.message.create({
       data: {
         subject,
         body: messageBody,
+        senderId: user.id,
+        recipientId: recipient.id
+      },
+      include: {
         sender: {
-          connectOrCreate: {
-            where: { id: senderId },
-            create: {
-              id: senderId,
-              email: 'sender@example.com',
-              name: 'User',
-              password: 'temp',
-            }
+          select: {
+            id: true,
+            name: true,
+            email: true
           }
         },
         recipient: {
-          connect: { id: recipientId }
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
         }
       }
     })
@@ -54,40 +103,6 @@ export async function POST(request: Request) {
     console.error('Error creating message:', error)
     return NextResponse.json(
       { error: 'Failed to send message' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function GET(request: Request) {
-  try {
-    // Return empty array if no database
-    if (!prisma) {
-      return NextResponse.json([])
-    }
-
-    // For now, get messages for temp user
-    const userId = 'temp-user-id'
-    
-    const messages = await prisma.message.findMany({
-      where: {
-        OR: [
-          { recipientId: userId },
-          { senderId: userId }
-        ]
-      },
-      include: {
-        sender: { select: { name: true, email: true } },
-        recipient: { select: { name: true, email: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
-    
-    return NextResponse.json(messages)
-  } catch (error) {
-    console.error('Error fetching messages:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch messages' },
       { status: 500 }
     )
   }

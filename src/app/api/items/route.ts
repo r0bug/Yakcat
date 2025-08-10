@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getAuthUser } from '@/lib/auth'
 
 function generateSlug(title: string): string {
   return title
@@ -10,35 +11,20 @@ function generateSlug(title: string): string {
     Date.now().toString(36)
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const user = await getAuthUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { title, description, price, location, contactInfo, images } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
-
-    // Check if database is available
-    if (!prisma) {
-      // Return mock data if no database
-      return NextResponse.json({
-        id: Date.now().toString(),
-        title,
-        description,
-        price,
-        location,
-        contactInfo,
-        slug: generateSlug(title),
-        images: images || [],
-        status: 'AVAILABLE',
-        createdAt: new Date().toISOString()
-      })
-    }
-
-    // For now, use a default vendor ID since we don't have auth yet
-    // In production, this would come from the authenticated user
-    const vendorId = 'temp-vendor-id'
 
     // Create the item with images
     const item = await prisma.item.create({
@@ -49,17 +35,7 @@ export async function POST(request: Request) {
         location,
         contactInfo,
         slug: generateSlug(title),
-        vendor: {
-          connectOrCreate: {
-            where: { id: vendorId },
-            create: {
-              id: vendorId,
-              email: 'temp@example.com',
-              name: 'Temp Vendor',
-              password: 'temp',
-            }
-          }
-        },
+        vendorId: user.id,
         images: {
           create: images?.map((img: any, index: number) => ({
             url: img.url,

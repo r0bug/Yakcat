@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UploadButton } from '@/utils/uploadthing'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function QuickCapturePage() {
   const router = useRouter()
+  const { user, isAuthenticated, loading } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [captures, setCaptures] = useState<Array<{
     url: string
@@ -15,6 +17,20 @@ export default function QuickCapturePage() {
     title?: string
   }>>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [loading, isAuthenticated, router])
+
+  if (loading) {
+    return <div className="container mx-auto px-4 py-8">Loading...</div>
+  }
+
+  if (!isAuthenticated) {
+    return null
+  }
 
   const handleCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -59,10 +75,14 @@ export default function QuickCapturePage() {
     const itemIds = []
     
     try {
+      const token = localStorage.getItem('token')
       for (const capture of captures) {
         const response = await fetch('/api/items', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          },
           body: JSON.stringify({
             title: capture.title || 'Quick Capture Item',
             description: 'Item pending details',
