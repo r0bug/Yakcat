@@ -4,8 +4,16 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function createAdmin() {
+  const password = process.env.ADMIN_PASSWORD || process.argv[2]
+  
+  if (!password) {
+    console.error('Please provide admin password as argument: npm run create-admin <password>')
+    console.error('Or set ADMIN_PASSWORD environment variable')
+    process.exit(1)
+  }
+  
   try {
-    const hashedPassword = await bcrypt.hash('6809Timer', 10)
+    const hashedPassword = await bcrypt.hash(password, 10)
     
     const user = await prisma.user.upsert({
       where: { email: 'john@yakimafinds.com' },

@@ -87,7 +87,17 @@ npx prisma migrate dev
 npx prisma db seed  # Optional: seed with test data
 ```
 
-### 4. Run Development Server
+### 4. Create Admin User (Optional)
+
+```bash
+# Pass password as argument
+npm run create-admin YourSecurePassword
+
+# Or use environment variable
+ADMIN_PASSWORD=YourSecurePassword npm run create-admin
+```
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
