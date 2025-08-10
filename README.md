@@ -1,73 +1,93 @@
-# YakCat - Modern Marketplace for Consignment Malls
+# YakCat - Consignment Mall Catalog System
 
-A fast, modern web application for consignment mall vendors to list and manage their items with **working image uploads from day one**.
+A modern, production-ready web application for consignment mall vendors to manage and showcase their items with **working image uploads**, messaging, forums, and event management.
+
+## 🌐 Live Production Site
+
+**[https://webcat.yakimafinds.com](https://webcat.yakimafinds.com)**
 
 ## Why YakCat?
 
-Unlike the previous WebCat implementation that struggled with basic image functionality, YakCat is built on a proven, production-ready stack where **images just work**.
+Built from scratch to replace WebCat's broken image functionality. YakCat uses a proven, production-ready stack where **everything just works**.
+
+## ✅ Fully Implemented Features
+
+### Core Functionality
+- **Working Image Uploads** - Reliable image handling with Uploadthing (replaced broken Cloudflare R2)
+- **Item Management** - Create, edit, and delete items with up to 6 images per item
+- **Quick Capture** - Bulk upload multiple items at once
+- **Search & Browse** - Browse items by category, search by keywords
+- **Mobile Responsive** - Works seamlessly on all devices
+
+### User Features
+- **Authentication** - Secure JWT-based login system
+- **My Items** - Personal dashboard for vendors to manage their listings
+- **Messaging** - Send and receive messages between users
+- **Forum** - Community discussion board
+- **Events Calendar** - View and manage upcoming events
+
+### Admin Features
+- **Admin Dashboard** - Central hub with statistics and quick actions
+- **User Management** - View all users, change roles, delete accounts
+- **Item Management** - Moderate and manage all items across the platform
+- **Site Settings** - Configure site-wide settings and preferences
 
 ## Tech Stack
 
 - **Next.js 14** - Full-stack React framework with App Router
 - **TypeScript** - Type safety throughout
-- **Prisma** - Modern ORM with great DX
-- **PostgreSQL** - Reliable relational database
+- **Prisma** - Modern ORM with PostgreSQL
+- **Neon** - Cloud PostgreSQL database
 - **Uploadthing** - Simple, reliable image uploads that actually work
 - **Tailwind CSS** - Utility-first styling
+- **JWT** - Secure authentication
 - **Vercel** - One-click deployments
 
-## Features
+## Default Login Credentials
 
-✅ **Working Image Uploads** - Upload and display images immediately  
-✅ Add items with up to 6 images  
-✅ Quick capture mode for mobile  
-✅ Item catalog with search  
-✅ Vendor management  
-✅ Responsive design  
+### Admin Account
+- Email: `john@yakimafinds.com`
+- Password: `6809Timer`
+
+### Test Accounts
+- **Vendor**: `vendor@test.com` / `password123`
+- **Staff**: `staff@test.com` / `password123`
 
 ## Getting Started
 
 ### 1. Clone and Install
 
 ```bash
-cd ~/Projects
 git clone https://github.com/r0bug/Yakcat.git
-cd Yakcat
+cd yakcat-new
 npm install
 ```
 
-### 2. Set up PostgreSQL
-
-You can use either:
-- Local PostgreSQL installation
-- Docker: `docker run --name yakcat-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres`
-- Cloud service like [Neon](https://neon.tech) or [Supabase](https://supabase.com) (free tier)
-
-### 3. Configure Environment
+### 2. Configure Environment
 
 Create `.env.local`:
 
 ```env
-# Database - Update with your PostgreSQL connection
-DATABASE_URL="postgresql://postgres:password@localhost:5432/yakcat"
+# Database - Neon PostgreSQL
+DATABASE_URL="your-neon-connection-string"
 
-# NextAuth
+# Authentication
+JWT_SECRET="your-jwt-secret"
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_SECRET="your-nextauth-secret"
 
 # Uploadthing - Get free API keys at uploadthing.com
-UPLOADTHING_TOKEN="your-token"
-UPLOADTHING_SECRET="your-secret"
+UPLOADTHING_TOKEN="your-uploadthing-token"
 ```
 
-### 4. Set up Database
+### 3. Set up Database
 
 ```bash
-npx prisma migrate dev --name init
-npx prisma generate
+npx prisma migrate dev
+npx prisma db seed  # Optional: seed with test data
 ```
 
-### 5. Run Development Server
+### 4. Run Development Server
 
 ```bash
 npm run dev
@@ -81,28 +101,68 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 1. Push to GitHub
 2. Import to Vercel
-3. Add environment variables
+3. Add environment variables in Vercel dashboard
 4. Deploy!
 
-Images will work immediately - no complex configuration needed.
+### Custom Domain with CNAME
 
-## Key Differences from WebCat
+1. Add CNAME record pointing to `cname.vercel-dns.com`
+2. Add domain in Vercel project settings
+3. Wait for DNS propagation
 
-| Feature | WebCat (Raindrop) | YakCat (Next.js) |
-|---------|-------------------|------------------|
-| Image Upload | ❌ Broken | ✅ Works |
-| Image Display | ❌ CORS errors | ✅ Works |
-| Deployment | ❌ Complex, fails often | ✅ One-click |
-| Development | ❌ Slow, many services | ✅ Fast, single app |
-| Database | ❌ Branching errors | ✅ Simple migrations |
+## Key Improvements Over WebCat
 
-## Coming Soon
+| Feature | WebCat (Old) | YakCat (New) |
+|---------|--------------|--------------|
+| Image Upload | ❌ Broken R2 uploads | ✅ Uploadthing works perfectly |
+| Image Display | ❌ 404 errors | ✅ Images display reliably |
+| Authentication | ❌ Complex, often fails | ✅ Simple JWT, always works |
+| Deployment | ❌ Complex multi-service | ✅ Single Next.js app |
+| Database | ❌ Branching issues | ✅ Simple migrations |
+| Admin Tools | ❌ Missing | ✅ Full admin dashboard |
+| Performance | ❌ Slow | ✅ Fast |
 
-- [ ] User authentication
-- [ ] Advanced search
-- [ ] Messaging system
-- [ ] Forum/discussions
-- [ ] Calendar events
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+
+### Items
+- `GET /api/items` - Get all items
+- `POST /api/items` - Create new item
+- `GET /api/items/[id]` - Get item by ID
+- `PUT /api/items/[id]` - Update item
+- `DELETE /api/items/[id]` - Delete item
+- `GET /api/my-items` - Get user's items
+
+### Messages
+- `GET /api/messages` - Get received messages
+- `POST /api/messages` - Send message
+- `GET /api/messages/sent` - Get sent messages
+
+### Forum
+- `GET /api/forum` - Get forum posts
+- `POST /api/forum` - Create forum post
+
+### Events
+- `GET /api/events` - Get events
+- `POST /api/events` - Create event
+
+### Admin
+- `GET /api/admin/users` - Get all users
+- `PATCH /api/admin/users/[id]` - Update user role
+- `DELETE /api/admin/users/[id]` - Delete user
+- `GET /api/admin/items` - Get all items (admin view)
+- `GET /api/admin/settings` - Get site settings
+- `POST /api/admin/settings` - Update site settings
+- `GET /api/admin/stats` - Get dashboard statistics
+
+## User Roles
+
+- **ADMIN** - Full access to all features and admin dashboard
+- **STAFF** - Can manage all items and moderate content
+- **VENDOR** - Can manage their own items and use standard features
 
 ## License
 
