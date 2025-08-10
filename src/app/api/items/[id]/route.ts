@@ -68,6 +68,26 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Handle images if provided
+    if (body.images && Array.isArray(body.images)) {
+      // Delete existing images
+      await prisma.itemImage.deleteMany({
+        where: { itemId: id }
+      })
+      
+      // Create new images
+      if (body.images.length > 0) {
+        await prisma.itemImage.createMany({
+          data: body.images.map((img: any, index: number) => ({
+            itemId: id,
+            url: img.url,
+            key: img.key,
+            order: index
+          }))
+        })
+      }
+    }
+
     // Update the item
     const updatedItem = await prisma.item.update({
       where: { id },
@@ -80,7 +100,9 @@ export async function PATCH(
         status: body.status
       },
       include: {
-        images: true
+        images: {
+          orderBy: { order: 'asc' }
+        }
       }
     })
 
