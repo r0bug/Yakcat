@@ -210,9 +210,9 @@ export default function EditItemPage({
           {images.length < 6 && (
             <AuthenticatedUploadButton
               endpoint="itemImage"
-              onClientUploadComplete={(res) => {
+              onClientUploadComplete={(res: any) => {
                 if (res) {
-                  const newImages = res.map(file => ({
+                  const newImages = res.map((file: any) => ({
                     url: file.url,
                     key: file.key,
                   }))
