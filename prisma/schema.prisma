@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          UserRole  @default(VENDOR)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  items         Item[]
+  messages      Message[] @relation("UserMessages")
+  sentMessages  Message[] @relation("SentMessages")
+  forumPosts    ForumPost[]
+  events        Event[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  VENDOR
+}
+
+model Item {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  price         Float?
+  location      String?
+  contactInfo   String?
+  status        ItemStatus @default(AVAILABLE)
+  slug          String    @unique
+  viewCount     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  vendor        User      @relation(fields: [vendorId], references: [id])
+  vendorId      String
+  
+  images        ItemImage[]
+  tags          ItemTag[]
+
+  @@index([vendorId])
+  @@index([status])
+  @@index([slug])
+  @@map("items")
+}
+
+enum ItemStatus {
+  AVAILABLE
+  PENDING
+  SOLD
+  REMOVED
+}
+
+model ItemImage {
+  id            String    @id @default(cuid())
+  url           String
+  key           String    // Uploadthing file key
+  order         Int       @default(0)
+  altText       String?
+  createdAt     DateTime  @default(now())
+  
+  item          Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId        String
+
+  @@index([itemId])
+  @@map("item_images")
+}
+
+model Tag {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  createdAt     DateTime  @default(now())
+  
+  items         ItemTag[]
+
+  @@map("tags")
+}
+
+model ItemTag {
+  item          Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId        String
+  tag           Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId         String
+
+  @@id([itemId, tagId])
+  @@map("item_tags")
+}
+
+model Message {
+  id            String    @id @default(cuid())
+  subject       String
+  body          String
+  read          Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  
+  sender        User      @relation("SentMessages", fields: [senderId], references: [id])
+  senderId      String
+  recipient     User      @relation("UserMessages", fields: [recipientId], references: [id])
+  recipientId   String
+
+  @@index([recipientId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model ForumPost {
+  id            String    @id @default(cuid())
+  title         String
+  content       String
+  pinned        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  author        User      @relation(fields: [authorId], references: [id])
+  authorId      String
+
+  @@index([authorId])
+  @@map("forum_posts")
+}
+
+model Event {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  startDate     DateTime
+  endDate       DateTime?
+  location      String?
+  createdAt     DateTime  @default(now())
+  
+  organizer     User      @relation(fields: [organizerId], references: [id])
+  organizerId   String
+
+  @@index([organizerId])
+  @@index([startDate])
+  @@map("events")
+}
