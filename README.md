@@ -47,11 +47,11 @@ Built from scratch to replace WebCat's broken image functionality. YakCat uses a
 
 ### Admin Account
 - Email: `john@yakimafinds.com`
-- Password: `6809Timer`
+- Password: `[Set your own secure password]`
 
 ### Test Accounts
-- **Vendor**: `vendor@test.com` / `password123`
-- **Staff**: `staff@test.com` / `password123`
+- **Vendor**: `vendor@test.com` / `[Set password]`
+- **Staff**: `staff@test.com` / `[Set password]`
 
 ## Getting Started
 
