@@ -1,15 +1,42 @@
+'use client'
+
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 export default function HomePage() {
-  // For now, we'll use static data since we haven't set up the database yet
-  // Once you have PostgreSQL running, we'll connect it
-  const items: any[] = []
+  const [items, setItems] = useState<any[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchItems()
+  }, [])
+
+  const fetchItems = async () => {
+    try {
+      const response = await fetch('/api/items')
+      if (response.ok) {
+        const data = await response.json()
+        setItems(data)
+      }
+    } catch (error) {
+      console.error('Error fetching items:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredItems = items.filter(item =>
+    item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-4xl font-bold">YakCat Marketplace</h1>
-        <div className="space-x-4">
+        <div className="flex gap-2">
           <Link 
             href="/items/new" 
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -25,7 +52,22 @@ export default function HomePage() {
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {/* Search Bar */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search items..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full max-w-md px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Loading items...</p>
+        </div>
+      ) : filteredItems.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">No items yet</p>
           <Link 
@@ -37,7 +79,7 @@ export default function HomePage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <Link 
               key={item.id} 
               href={`/items/${item.slug}`}
