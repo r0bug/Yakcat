@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { UploadButton } from '@/utils/uploadthing'
+import { AuthenticatedUploadButton } from '@/components/AuthenticatedUploadButton'
 
 interface ItemImage {
   id: string
@@ -208,7 +208,7 @@ export default function EditItemPage({
 
           {/* Upload button */}
           {images.length < 6 && (
-            <UploadButton
+            <AuthenticatedUploadButton
               endpoint="itemImage"
               onClientUploadComplete={(res) => {
                 if (res) {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { UploadButton } from '@/utils/uploadthing'
+import { AuthenticatedUploadButton } from '@/components/AuthenticatedUploadButton'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -115,7 +115,7 @@ export default function NewItemPage() {
 
           {/* Upload button */}
           {images.length < 6 && (
-            <UploadButton
+            <AuthenticatedUploadButton
               endpoint="itemImage"
               onClientUploadComplete={(res) => {
                 if (res) {
@@ -124,9 +124,11 @@ export default function NewItemPage() {
                     key: file.key,
                   }))
                   setImages([...images, ...newImages])
+                  console.log('Images uploaded successfully:', newImages)
                 }
               }}
               onUploadError={(error: Error) => {
+                console.error('Upload error:', error)
                 alert(`Upload failed: ${error.message}`)
               }}
               appearance={{

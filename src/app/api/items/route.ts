@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { title, description, price, location, contactInfo, images } = body
 
+    console.log('Creating item for user:', user.id)
+    console.log('Images received:', images)
+
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
@@ -48,6 +51,8 @@ export async function POST(request: NextRequest) {
         images: true,
       }
     })
+
+    console.log('Item created successfully:', item.id, 'with', item.images.length, 'images')
 
     return NextResponse.json(item)
   } catch (error) {

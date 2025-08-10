@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { UploadButton } from '@/utils/uploadthing'
+import { AuthenticatedUploadButton } from '@/components/AuthenticatedUploadButton'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -148,7 +148,7 @@ export default function QuickCapturePage() {
 
         {/* Upload Button */}
         <div className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-lg text-center">
-          <UploadButton
+          <AuthenticatedUploadButton
             endpoint="itemImage"
             onClientUploadComplete={handleUploadComplete}
             onUploadError={(error: Error) => {
